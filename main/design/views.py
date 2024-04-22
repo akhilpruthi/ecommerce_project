@@ -3,7 +3,12 @@ from django.contrib import messages
 from .forms import UserRegisterForm 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from .models import Product
+from .forms import ProductForm
 from django.contrib.auth import authenticate, login,logout
+
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 # Create your views here.
@@ -48,6 +53,17 @@ def register_request(request):
             # All validations passed, save the user
             user = User.objects.create_user(username=username1, email=email, password=password1,first_name = first_name,last_name = last_name)
             user.save()
+
+            #Send Email to customer on new login
+            send_mail(
+                'Welcome to E-commerce website',
+                "Hello {}! \n your account has been successully created ".format(first_name),
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently=False
+            )
+                
+
             username = user.username
             messages.success(request, f'Account created for {username}!')
             login(request, user)
@@ -68,7 +84,7 @@ def loginUser(request):
         return redirect("home_page") 
 
     if request.method == "POST":
-        email = request.POST['username']
+        email = request.POST['email']
         password = request.POST['password']
         username = email.split('@')[0]
 
@@ -93,5 +109,24 @@ def logoutUser(request):
     return redirect('loginUser')
 
 
-
+# crud of products
  
+def addProduct(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST,request.FILES,user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('/viewProduct/')
+    
+    else:
+        form = ProductForm(user = request.user)
+
+    context = {"form" : form}
+    return render (request,'addproduct.html',context)
+
+
+def viewProduct(request):
+    productObj = Product.objects.all()
+    context = {"productlist" : productObj}
+
+    return render(request, 'viewproducts.html',context)
