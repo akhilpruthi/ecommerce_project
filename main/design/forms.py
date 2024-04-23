@@ -16,13 +16,7 @@ class UserRegisterForm(UserCreationForm):
 
 
 class ProductForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
-        super(ProductForm, self).__init__(*args, **kwargs)
-        if user:
-            self.fields['user'].initial = user
-            self.fields['user'].disabled = True
-
+  
     class Meta:
         model = Product
-        fields = ['user', 'image','category', 'name', 'description', 'price']
+        fields = ['product_brand', 'product_image','product_name', 'product_description', 'product_price', 'product_usage_for']

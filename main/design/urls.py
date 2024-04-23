@@ -9,5 +9,6 @@ urlpatterns = [
     path('logoutUser/',views.logoutUser,name = 'logoutUser'),
     path('addProduct/', views.addProduct, name='addProduct'),
     path('viewProduct/', views.viewProduct, name='viewProduct'),
+    path('searchitem/<str:pk>', views.searchitem, name='searchitem'),
 
 ]

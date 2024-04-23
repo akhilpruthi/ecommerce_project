@@ -1,14 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
+from django.db.models import Q
 from django.contrib import messages
 from .forms import UserRegisterForm 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Product
+from .models import Product,Brand,UsageFor
 from .forms import ProductForm
 from django.contrib.auth import authenticate, login,logout
 
 from django.core.mail import send_mail
 from django.conf import settings
+
+from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 
 
 # Create your views here.
@@ -108,25 +111,94 @@ def logoutUser(request):
     messages.error(request,"User successfully logged out ")
     return redirect('loginUser')
 
-
 # crud of products
  
 def addProduct(request):
     if request.method == "POST":
-        form = ProductForm(request.POST,request.FILES,user=request.user)
+        form = ProductForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
             return redirect('/viewProduct/')
     
     else:
-        form = ProductForm(user = request.user)
+        form = ProductForm()
 
     context = {"form" : form}
     return render (request,'addproduct.html',context)
 
-
 def viewProduct(request):
-    productObj = Product.objects.all()
-    context = {"productlist" : productObj}
+    search_query = ''
+
+    if request.GET.get('search_query'):
+        search_query = request.GET.get('search_query')
+
+  
+
+    # productObj = Product.objects.all()
+    productObj = Product.objects.filter(
+        Q(product_name__icontains = search_query) |
+        Q(product_brand__brand_name__icontains=search_query) |
+        Q(product_usage_for__usagefor_name__icontains=search_query)
+        )
+    
+    brandsObj = Brand.objects.all()
+    usageforObj = UsageFor.objects.all()
+    # we need to get page manually from the user
+    page = request.GET.get('page')
+    result = 2
+    paginator = Paginator(productObj,result)
+
+    try:
+        productObj = paginator.page(page)
+
+    except PageNotAnInteger: #exception for if no value for page varibale is given 
+        page = 1
+        productObj = paginator.page(page)
+
+    except EmptyPage: #exception for if user tries to manually override the pagination
+        page = paginator.num_pages
+        productObj = paginator.page(page)
+
+
+    context = {"productlist" : productObj, "brandlist" : brandsObj,"usagelist" :usageforObj, "search_query" : search_query ,"paginator" : paginator}
 
     return render(request, 'viewproducts.html',context)
+
+def searchitem(request, pk):
+    models_list = [Product, Brand, UsageFor]
+    results = []
+    related_products = []
+
+
+    for model in models_list:
+        # Get the model name in lowercase
+        model_name = model.__name__.lower()
+        print("MODEL NAME::::::::::",model_name)
+
+        try:
+            field_name = model_name +"_name"
+            result = model.objects.filter(**{field_name: pk})
+           
+        
+            print("RESULT:::::::::::::::::",result)
+        
+            results.extend(result)
+        except AttributeError:
+            # If the field doesn't exist in the model, move on to the next one
+            continue
+    
+    condition = Q()
+    for result in results:
+        if isinstance(result, Brand):
+            condition |= Q(product_brand=result)
+        elif isinstance(result, UsageFor):
+            condition |= Q(product_usage_for=result)
+
+    # Filter Product objects based on the combined condition
+    products = Product.objects.filter(condition)
+
+    # products = Product.objects.filter(product_brand__in=results)
+    brandsObj = Brand.objects.all()
+    usageforObj = UsageFor.objects.all()
+    context = {'productlist': products,"brandlist" : brandsObj,"usagelist" :usageforObj}
+    return render(request, 'viewproducts.html', context)
