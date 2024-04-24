@@ -25,11 +25,16 @@
     <link rel="stylesheet" href="{% static 'css/slick.css' %}">
     <!-- style CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- for loader -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
     <!--::header part start::-->
     <header class="main_menu home_menu">
+
+    <!-- login form ends -->
+        </div>
         <div class="container">
             <div class="row align-items-center justify-content-center">
                 <div class="col-lg-12">
@@ -65,14 +70,18 @@
                                         role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         pages
                                     </a>
+                                    
                                     <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
                                         {% if request.user.is_authenticated %}
-                                        <a class="dropdown-item" href="{% url 'logoutUser' %}"> Logout</a>
+                                        <a class="dropdown-item" id="logout-link" href="{% url 'logoutUser' %}">Logout</a>
                                         <a class="dropdown-item" href="{% url 'addProduct' %}"> Add Product</a>
                                         <a class="dropdown-item" href="{% url 'viewProduct' %}"> View Product</a>
+                                        
+                                        <!-- login form ends -->
                                         {% else %}
                                         <a class="dropdown-item" href="{% url 'loginUser' %}"> 
-                                            Login/Register
+                                            Login/Register</a>
+                                       
                                         {% endif %}    
                                         </a>
                                         <a class="dropdown-item" href="checkout.html">product checkout</a>
@@ -124,8 +133,6 @@
 
     {% endblock content %}
     <!-- block content ends -->
-
-
     <!--::footer_part start::-->
     <footer class="footer_part">
         <div class="footer_iner">
@@ -164,10 +171,10 @@
                     <div class="col-lg-12">
                         <div class="copyright_text">
                             <P><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="ti-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></P>
-                            <div class="copyright_link">
-                                <a href="#">Turms & Conditions</a>
+                             Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="ti-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
+                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></P>
+                                                <div class="copyright_link">
+                                <a href="#">Terms & Conditions</a>
                                 <a href="#">FAQ</a>
                             </div>
                         </div>
@@ -200,6 +207,45 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="{% static 'js/mail-script.js' %}"></script>
     <!-- custom js -->
     <script src="{% static 'js/custom.js' %}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Intercept click event on navbar links
+            $('.navbar-nav .nav-link, .dropdown-menu .dropdown-item').click(function(event) {
+                // Prevent the default action of the link
+                event.preventDefault();
+                
+                // Show the loader
+                $('#homeloader').show();
+                
+                // Redirect to the link after a short delay (optional)
+                var linkUrl = $(this).attr('href');
+                setTimeout(function() {
+                    window.location.href = linkUrl;
+                }, 1000); // Adjust the delay as needed
+            });
+        });
+    </script>
+    
+    {% comment %} <script>
+        $(document).ready(function() {
+            // Intercept click event on logout link
+            $('.dropdown-item#logout-link').click(function(event) {
+                // Prevent the default action of the link
+                event.preventDefault();
+                
+                // Show the loader
+                $('#homeloader').show();
+                
+                // Redirect to the logout URL after a short delay (optional)
+                var logoutUrl = $(this).attr('href');
+                setTimeout(function() {
+                    window.location.href = logoutUrl;
+                }, 2000); // Adjust the delay as needed
+            });
+        });
+    </script> {% endcomment %}
+  
 </body>
 
 </html>

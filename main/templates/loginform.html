@@ -3,6 +3,11 @@
  {% block content %}
  <!--================login_part Area =================-->
  <section class="login_part section_padding ">
+    {% comment %} overlay start {% endcomment %}
+    <div id="overlay"></div>
+     <!-- loader  -->
+     <div id="loader" class="akhilloader"  style="z-index:100" ></div>
+     <!-- login form ends -->
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 col-md-6">
@@ -20,32 +25,88 @@
                     <div class="login_part_form_iner">
                         <h3>Welcome Back ! <br>
                             Please Sign in now</h3>
-                        <form class="row contact_form" action="#" method="post" novalidate="novalidate">
-                            {%  csrf_token %}
-                            <div class="col-md-12 form-group p_star">
-                                <input type="email" class="form-control" id="email" name="email" value=""
-                                    placeholder="email" required>
-                            </div>
-                            <div class="col-md-12 form-group p_star">
-                                <input type="password" class="form-control" id="password" name="password" value=""
-                                    placeholder="Password" required>
-                            </div>
-                            <div class="col-md-12 form-group">
-                                <div class="creat_account d-flex align-items-center">
-                                    <input type="checkbox" id="f-option" name="selector">
-                                    <label for="f-option">Remember me</label>
+                            <!-- login form starts -->
+                            <form class="row contact_form" id="customloader" action="{% url 'loginUser' %}" method="post" novalidate="novalidate">
+                                {%  csrf_token %}
+                                <div class="col-md-12 form-group p_star">
+                                    <input type="email" class="form-control" id="email" name="email" value=""
+                                        placeholder="email" required>
                                 </div>
-                                <button type="submit" value="submit" class="btn_3">
-                                    log in
-                                </button>
-                                <a class="lost_pass" href="{% url 'reset_password' %}">forget password?</a>
-                            </div>
-                        </form>
+                                <div class="col-md-12 form-group p_star">
+                                    <input type="password" class="form-control" id="password" name="password" value=""
+                                        placeholder="Password" required>
+                                </div>
+                                <div class="col-md-12 form-group">
+                                    <div class="creat_account d-flex align-items-center">
+                                        <input type="checkbox" id="f-option" name="selector">
+                                        <label for="f-option">Remember me</label>
+                                    </div>
+                                    <button type="submit" value="submit" class="btn_3">
+                                        log in
+                                    </button>
+                                    <a class="lost_pass" href="{% url 'reset_password' %}">forget password?</a>
+                                </div>
+                            </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+<script>
+    $(document).ready(function() {
+        // Intercept form submission event
+        $('#customloader').submit(function(event) {
+            // Show the overlay
+            $('#overlay').show();
+
+            // Show the loader
+            $('#loader').show();
+
+            // Prevent the default form submission
+            event.preventDefault();
+
+            // Delay form submission for 2 seconds (2000 milliseconds)
+            setTimeout(function() {
+                // Submit the form after 2 seconds
+                $('#customloader')[0].submit();
+            }, 2000); // Adjust the delay time as needed
+        });
+    });
+</script>
+<script>
+    // Inside your script to hide the loader
+    $('#loader').hide();
+    $('#overlay').hide(); // Hide the overlay along with the loader
+</script>
+
+{% comment %} <script>
+    $(document).ready(function() {
+        // Intercept form submission event
+        $('#customloader').submit(function(event) {
+            // Show the loader
+            $('#loader').show();
+
+            // Prevent the default form submission
+            event.preventDefault();
+
+            // Delay form submission for 2 seconds (2000 milliseconds)
+            setTimeout(function() {
+                // Submit the form after 2 seconds
+                $('#customloader')[0].submit();
+            }, 1000); // Adjust the delay time as needed
+        });
+    });
+</script> {% endcomment %}
+
+{% comment %} <script>
+    $(document).ready(function() {
+    // Intercept form submission event
+    $('#customloader').submit(function() {
+        // Show the loader
+        $('#loader').show();
+    });
+});
+</script> {% endcomment %}
 <!--================login_part end =================-->
 {% endblock content %}

@@ -3,6 +3,10 @@
 {% load static %}
 
 {% block content %}
+{% comment %} overlay start {% endcomment %}
+<div id="overlay"></div>
+<!-- loader  -->
+<div id="loader" class="akhilloader"  style="z-index:100" ></div>
 <!-- product list part start-->
 <section class="product_list section_padding">
     <div class="container">
@@ -56,7 +60,7 @@
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="load_more_btn text-center pagination justify-content-center">
+                    <div class="load_more_btn text-center pagination justify-content-center" id="paginationloader">
                         <ul class="container " style="display: contents;">
                             {% if productlist.has_previous %}
                                 <li><a href="?page={{productlist.previous_page_number}}" class="btn page-link btn--sub">&#10094;PREV</a></li>
@@ -144,5 +148,70 @@
         </div>
     </div>
 </section>
+<script>
+    $(document).ready(function() {
+        console.log("Document is ready. JavaScript code is executing.");
+
+        // Function to show loader and overlay
+        function showLoader() {
+            // Show the overlay
+            $('#overlay').show();
+
+            // Show the loader
+            $('#loader').show();
+        }
+
+        // Function to hide loader and overlay
+        function hideLoader() {
+            // Hide the loader
+            $('#loader').hide();
+
+            // Hide the overlay
+            $('#overlay').hide();
+        }
+
+        // Intercept click event on pagination links
+        $('#paginationloader ul li a').click(function(event) {
+            // Show loader and overlay
+            showLoader();
+
+            // Prevent the default action of the link
+            event.preventDefault();
+
+            // Get the URL from the clicked link
+            var nextPageUrl = $(this).attr('href');
+
+            // Delay the page navigation to show the loader
+            setTimeout(function() {
+                // Navigate to the next page
+                window.location.href = nextPageUrl;
+            }, 1000); // Adjust the delay time as needed
+        });
+
+        // Intercept change event on filter options
+        $('.select_option_dropdown a').click(function(event) {
+            // Show loader and overlay
+            showLoader();
+        });
+
+        // Intercept form submission event for search form
+        $('form[action="{% url 'viewProduct' %}"]').submit(function(event) {
+            // Show loader and overlay
+            showLoader();
+
+            // Delay form submission for 2 seconds (2000 milliseconds)
+            setTimeout(function() {
+                // Continue with the form submission
+                $('form[action="{% url 'viewProduct' %}"]').unbind('submit').submit();
+            }, 1000); // Adjust the delay time as needed
+        });
+    });
+</script>
+<script>
+    // Inside your script to hide the loader
+    $('#loader').hide();
+    $('#overlay').hide(); // Hide the overlay along with the loader
+</script>
+
 <!-- subscribe part end -->
 {% endblock content %}
