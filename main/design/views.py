@@ -4,7 +4,7 @@ from django.contrib import messages
 from .forms import UserRegisterForm 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Product,Brand,UsageFor
+from .models import Product,Brand,UsageFor,Cart,CartItem
 from .forms import ProductForm
 from django.contrib.auth import authenticate, login,logout
 
@@ -12,7 +12,11 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
+from django.db import IntegrityError
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -164,6 +168,13 @@ def viewProduct(request):
 
     return render(request, 'viewproducts.html',context)
 
+
+def productdetail(request,pk):
+    productObj = Product.objects.filter(id = pk)
+    context={'productDetailList':productObj}
+    return render(request,'productdetail.html',context)
+
+
 def searchitem(request, pk):
     models_list = [Product, Brand, UsageFor]
     results = []
@@ -202,3 +213,54 @@ def searchitem(request, pk):
     usageforObj = UsageFor.objects.all()
     context = {'productlist': products,"brandlist" : brandsObj,"usagelist" :usageforObj}
     return render(request, 'viewproducts.html', context)
+
+
+
+# @login_required
+# def add_to_cart(request, pk):
+#     # Get the product object
+#     product = get_object_or_404(Product, id=pk)
+    
+#     # Get the user's cart or create a new one
+#     cart, created = Cart.objects.get_or_create(user=request.user)
+    
+#     # Check if the product is already in the cart
+#     cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+    
+#     if not item_created:
+#         # Product already exists in the cart, you may want to adjust the quantity here
+#         logger.info(f"Product '{product.product_name}' already exists in the cart for user '{request.user.username}'.")
+    
+#     # Get all cart items for the user
+#     cart_items = CartItem.objects.filter(cart=cart)
+    
+#     # Pass the cart items to the productcheckout template
+#     return render(request, 'productcheckout.html', {'cart_items': cart_items})
+
+@login_required
+def add_to_cart(request, pk):
+    # Get the product object
+    product = get_object_or_404(Product, id=pk)
+    
+    # Get the user's cart or create a new one
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Set the user for the cart item
+    try:
+        cart_item = CartItem.objects.create(cart=cart, product=product, user=request.user)
+    except IntegrityError as e:
+        # Handle the case where the cart item already exists
+        cart_item = CartItem.objects.get(cart=cart, product=product)
+        cart_item.quantity += 1
+        cart_item.save()
+        # Redirect to the productcheckout page
+        return redirect('/productcheckout/')
+    
+    # Redirect to the productcheckout page
+    return redirect('/productcheckout/')
+
+def productcheckout(request):
+    # productObj = Product.objects.filter(id = pk)
+    cartItemObj = CartItem.objects.all()
+    context={'cartItemList':cartItemObj}
+    return render(request,'productcheckout.html',context)

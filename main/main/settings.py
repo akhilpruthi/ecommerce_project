@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 DATABASES = {
 	'default': {
 		'ENGINE': 'mysql.connector.django',
-		'NAME': 'ecommerce1',
+		'NAME': 'ecommerce',
 		'USER': 'root',
 		'PASSWORD': 'Temporary.123',
 		'HOST':'localhost',
