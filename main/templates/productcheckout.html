@@ -139,37 +139,24 @@
             <div class="order_box">
               <h2>Your Order</h2>
               <ul class="list">
-               
                 <li>
                   <a href="#">Product
                     <span>Total</span>
                   </a>
                 </li>
-                {%for cartitem in cartItemList %}
+                {%for cartitem in cart_items %}
                 <li>
                   <a href="#">{{cartitem.product}}
-                    <span class="middle">x {{cartitem.quantity}}</span>
+                    <span class="middle">x {{cartitem.quantity}}</span>  
                     <span class="last">{{cartitem.amount}}</span>
                   </a>
                 </li>
                 {% endfor %}
-                {% comment %} <li>
-                  <a href="#">Fresh Tomatoes
-                    <span class="middle">x 02</span>
-                    <span class="last">$720.00</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Fresh Brocoli
-                    <span class="middle">x 02</span>
-                    <span class="last">$720.00</span>
-                  </a>
-                </li> {% endcomment %}
               </ul>
               <ul class="list list_2">
                 <li>
                   <a href="#">Subtotal
-                    <span>$2160.00</span>
+                    <span>{{caritems_total_amount.total_amount}}</span>
                   </a>
                 </li>
                 <li>

@@ -14,6 +14,10 @@ from django.conf import settings
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.db import IntegrityError
 
+from django.http import JsonResponse
+
+from django.db.models import Sum
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -216,16 +220,51 @@ def searchitem(request, pk):
 
 
 
+
+@login_required
+def add_to_cart(request, pid, quantity):
+    # Get the product object
+    product = get_object_or_404(Product, id=pid)
+    
+    # Get the user's cart or create a new one
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Check if the product is already in the cart
+    cart_item, item_created = CartItem.objects.get_or_create(user=request.user, cart=cart, product=product)
+    
+    # If the item already exists in the cart, update its quantity
+    if not item_created:
+        # Update the quantity of the existing cart item
+        cart_item.quantity += int(quantity)
+        cart_item.save()
+        logger.info(f"Quantity of product '{product.product_name}' updated in the cart for user '{request.user.username}'.")
+    else:
+        # Set the quantity for the newly added cart item
+        cart_item.quantity = int(quantity)
+        cart_item.save()
+        logger.info(f"Product '{product.product_name}' added to the cart for user '{request.user.username}'.")
+    
+    caritems_total_amount = CartItem.objects.filter(cart=cart).aggregate(total_amount=Sum('amount'))
+    cart_items_obj = CartItem.objects.filter(cart=cart)
+    print("TOTAL AMOUNT::::::::::::::::::::::",caritems_total_amount)
+    
+#     # Pass the cart items to the productcheckout template
+    return render(request, 'productcheckout.html', {'cart_items': cart_items_obj,'caritems_total_amount':caritems_total_amount})
+    # Redirect to the product checkout page
+    # return redirect('productcheckout')
+
 # @login_required
-# def add_to_cart(request, pk):
+# def add_to_cart(request, pid,quantity):
+#     product_id = pid
+#     quantity = quantity
 #     # Get the product object
-#     product = get_object_or_404(Product, id=pk)
+#     product = get_object_or_404(Product, id=product_id)
     
 #     # Get the user's cart or create a new one
 #     cart, created = Cart.objects.get_or_create(user=request.user)
     
 #     # Check if the product is already in the cart
-#     cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+#     cart_item, item_created = CartItem.objects.get_or_create( user=request.user,cart=cart, product=product,quantity = quantity)
     
 #     if not item_created:
 #         # Product already exists in the cart, you may want to adjust the quantity here
@@ -237,30 +276,70 @@ def searchitem(request, pk):
 #     # Pass the cart items to the productcheckout template
 #     return render(request, 'productcheckout.html', {'cart_items': cart_items})
 
-@login_required
-def add_to_cart(request, pk):
-    # Get the product object
-    product = get_object_or_404(Product, id=pk)
+# @login_required
+# def add_to_cart(request, pk):
+#     # Get the product object
+#     product = get_object_or_404(Product, id=pk)
     
-    # Get the user's cart or create a new one
-    cart, created = Cart.objects.get_or_create(user=request.user)
+#     # Get the user's cart or create a new one
+#     cart, created = Cart.objects.get_or_create(user=request.user)
     
-    # Set the user for the cart item
-    try:
-        cart_item = CartItem.objects.create(cart=cart, product=product, user=request.user)
-    except IntegrityError as e:
-        # Handle the case where the cart item already exists
-        cart_item = CartItem.objects.get(cart=cart, product=product)
-        cart_item.quantity += 1
-        cart_item.save()
-        # Redirect to the productcheckout page
-        return redirect('/productcheckout/')
+#     # Set the user for the cart item
+#     try:
+#         cart_item = CartItem.objects.create(cart=cart, product=product, user=request.user)
+#     except IntegrityError as e:
+#         # Handle the case where the cart item already exists
+#         cart_item = CartItem.objects.get(cart=cart, product=product)
+#         cart_item.quantity += 1
+#         cart_item.save()
+#         # Redirect to the productcheckout page
+#         return redirect('/productcheckout/')
     
-    # Redirect to the productcheckout page
-    return redirect('/productcheckout/')
+#     # Redirect to the productcheckout page
+#     return redirect('/productcheckout/')
 
-def productcheckout(request):
-    # productObj = Product.objects.filter(id = pk)
-    cartItemObj = CartItem.objects.all()
-    context={'cartItemList':cartItemObj}
-    return render(request,'productcheckout.html',context)
+
+# @login_required
+# def add_to_cart(request,pid,quantity):
+#     # if request.method == 'GET' and request.is_ajax():
+#         product_id = pid
+#         quantity = quantity
+#         print("PARAMS::::::::::::", product_id,quantity)
+
+#         if product_id is None or quantity is None:
+#             return JsonResponse({'error': 'Invalid parameters.'}, status=400)
+
+#         try:
+#             product = Product.objects.get(pk=product_id)
+#         except Product.DoesNotExist:
+#             return JsonResponse({'error': 'Product not found.'}, status=404)
+
+#         # Get the user's cart or create a new one
+#         cart, created = Cart.objects.get_or_create(user=request.user)
+
+#         # Set the user for the cart item
+#         try:
+#             cart_item = CartItem.objects.create(cart=cart, product=product, user=request.user, quantity=quantity)
+#             cart_items_object = CartItem.objects.filter(user = request.user)
+#             context={'cartItemList':cart_items_object}
+#             return render(request,'productcheckout.html',context)
+#             # return JsonResponse({'message': 'Item added to cart successfully.'})
+#         except IntegrityError:
+#             # Handle the case where the cart item already exists
+#             cart_item = CartItem.objects.get(cart=cart, product=product)
+#             cart_item.quantity += int(quantity)
+#             cart_item.save()
+#             cart_items_object = CartItem.objects.filter(user = request.user)
+#             context={'cartItemList':cart_items_object}
+#             return render(request,'productcheckout.html',context)
+#             # return JsonResponse({'message': 'Item quantity updated in cart.'})
+
+#         # return JsonResponse({'error': 'Invalid request.'}, status=400)
+
+
+# def productcheckout(request):
+#     # productObj = Product.objects.filter(id = pk)
+#     cartItemObj = CartItem.objects.filter(user = request.user)
+#     print("DATA::::::::::::::",cartItemObj)
+#     context={'cartItemList':cartItemObj}
+#     return render(request,'productcheckout.html',context)

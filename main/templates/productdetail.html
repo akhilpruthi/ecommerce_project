@@ -26,7 +26,7 @@
                 </div>
           </div>
         </div>
-        <div class="col-lg-8">
+        {% comment %} <div class="col-lg-8">
           <div class="single_product_text text-center">
             <h3>{{product.product_name}}</h3>
             <p>{{product.product_description}} </p>
@@ -35,16 +35,41 @@
                     <p>Quantity</p>
                     <div class="product_count d-inline-block">
                         <span class="product_count_item inumber-decrement"> <i class="ti-minus"></i></span>
-                        <input class="product_count_item input-number" type="text" value="1" min="0" max="10">
+                        <input class="product_count_item input-number" type="text" value="1" min="0" max="10" data-quantity="1"> 
+                        <input type="number" name = quantity  placeholder="enter quantity" />
                         <span class="product_count_item number-increment"> <i class="ti-plus"></i></span>
                     </div>
                     <p>{{product.product_price}}</p>
                 </div>
               <div class="add_to_cart">
-                  <a href="{% url 'add_to_cart' product.id %}" class="btn_3">add to cart</a>
+                <a href="{% url 'add_to_cart' product.id 2 %}" class="btn_3">add to cart</a>
               </div>
             </div>
           </div>
+        </div> {% endcomment %}
+        <div class="col-lg-8">
+            <div class="single_product_text text-center">
+                <h3>{{ product.product_name }}</h3>
+                <p>{{ product.product_description }}</p>
+                <div class="card_area">
+                    <div class="product_count_area">
+                        <p>Quantity</p>
+                        <div class="product_count d-inline-block">
+                            <span class="product_count_item inumber-decrement">
+                                <i class="ti-minus"></i>
+                            </span>
+                            <input class="product_count_item input-number" type="text" value="1" min="0" max="10" id="quantity_input"> 
+                            <span class="product_count_item number-increment">
+                                <i class="ti-plus"></i>
+                            </span>
+                        </div>
+                        <p>{{ product.product_price }}</p>
+                    </div>
+                    <div class="add_to_cart">
+                        <a href="#" class="btn_3" id="add_to_cart_button">add to cart</a>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endfor %}
       </div>
@@ -121,33 +146,25 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         </div>
     </footer>
     <!--::footer_part end::-->
-
-    <!-- jquery plugins here-->
-    <script src="js/jquery-1.12.1.min.js"></script>
-    <!-- popper js -->
-    <script src="js/popper.min.js"></script>
-    <!-- bootstrap js -->
-    <script src="js/bootstrap.min.js"></script>
-    <!-- easing js -->
-    <script src="js/jquery.magnific-popup.js"></script>
-    <!-- swiper js -->
-    <script src="js/swiper.min.js"></script>
-    <!-- swiper js -->
-    <script src="js/mixitup.min.js"></script>
-    <!-- particles js -->
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/jquery.nice-select.min.js"></script>
-    <!-- slick js -->
-    <script src="js/slick.min.js"></script>
-    <script src="js/jquery.counterup.min.js"></script>
-    <script src="js/waypoints.min.js"></script>
-    <script src="js/contact.js"></script>
-    <script src="js/jquery.ajaxchimp.min.js"></script>
-    <script src="js/jquery.form.js"></script>
-    <script src="js/jquery.validate.min.js"></script>
-    <script src="js/mail-script.js"></script>
-    <!-- custom js -->
-    <script src="js/custom.js"></script>
+    <script>
+        document.getElementById("add_to_cart_button").addEventListener("click", function(event) {
+            event.preventDefault();
+            
+            // Get the product ID
+            var product_id = "{{ product.id }}";
+            
+            // Get the quantity from the input field
+            var quantity = document.getElementById("quantity_input").value;
+            
+            // Construct the URL with product ID and quantity
+            var url = "{% url 'add_to_cart' %}" + product_id + "/" + quantity + "/";
+            
+            // Redirect to the constructed URL
+            window.location.href = url;
+        });
+    </script>
+    
 </body>
+
 
 {% endblock content %}
